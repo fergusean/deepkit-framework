@@ -1,6 +1,10 @@
-import { expect, test } from '@jest/globals';
-import { Logger, LoggerLevel, ScopeFormatter } from '../src/logger.js';
+import { afterEach, expect, jest, test } from '@jest/globals';
+import { JSONTransport, Logger, LoggerLevel, ScopeFormatter } from '../src/logger.js';
 import { MemoryLoggerTransport } from '../src/memory-logger.js';
+
+afterEach(() => {
+    jest.resetAllMocks();
+});
 
 test('log level', () => {
     const logger = new Logger();
@@ -63,4 +67,14 @@ test('log data', () => {
     logger.log({ user: new User });
 
     expect(memory.messages[0].message).toEqual('{ user: User {} }');
+});
+
+test('issue 443: JSON logger should strip colors', () => {
+    const writeMock = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    const transport = new JSONTransport();
+    const logger = new Logger([transport]);
+
+    logger.log('This is a <yellow>yellow</yellow> message');
+    expect(writeMock).toHaveBeenLastCalledWith(expect.stringMatching(/This is a yellow message/));
 });
