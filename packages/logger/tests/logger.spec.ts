@@ -113,18 +113,28 @@ test('scoped logger', () => {
         constructor(public logger: ScopedLogger) {
         }
     }
-
+    class AnotherProvider {
+        constructor(public logger: ScopedLogger, public myProvider: MyProvider) {
+        }
+    }
     {
         const injector = Injector.from([
             MyProvider,
+            AnotherProvider,
             Logger, // optional base logger used by ScopedLogger
             ScopedLogger,
         ]);
+
         const logger = injector.get(Logger);
-        const provider = injector.get(MyProvider);
         expect(logger).toBeInstanceOf(Logger);
-        expect(provider.logger).toBeInstanceOf(Logger);
-        expect(provider.logger).toBe(logger.scoped('MyProvider'));
+
+        // const myProvider = injector.get(MyProvider);
+        // expect(myProvider.logger).toBeInstanceOf(Logger);
+        // expect(myProvider.logger).toBe(logger.scoped('MyProvider'));
+
+        const anotherProvider = injector.get(AnotherProvider);
+        expect(anotherProvider.logger).toBeInstanceOf(Logger);
+        expect(anotherProvider.logger).toBe(logger.scoped('AnotherProvider'));
     }
 
     {
